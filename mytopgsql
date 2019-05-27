@@ -1,4 +1,10 @@
-mysqldump -uroot -p123456 -E -R --triggers -B xinxinlive xinxinmall xinmall hgameDB --single-transaction --set-gtid-purged=OFF --compatible=postgresql --skip-comments --skip-disable-keys --skip-set-charset --allow-keywords --skip-quote-names --no-data > ~/tab.sql
+#导出表结构
+mysqldump -uroot -p123456 -E -R --triggers -B xinxinlive xinxinmall xinmall hgameDB --single-transaction --set-gtid-purged=OFF /
+--compatible=postgresql --skip-comments --skip-disable-keys --skip-set-charset --allow-keywords --skip-quote-names --no-data /
+> ~/tab.sql
+#转换小写，转换数据类型，去除COMMENT语句，去除USE转换为\c
+#目前只有int bigint varbinary decimal tinyint datetime double类型转换
+#去除CHARACTER SET语句，默认'0000-00-00 00:00:00'改为current_timestamp
 cat tab.sql | sed -i 's/USE/\\c/g' | sed -i 's/bigint\+([0-9]\+)/bigint/g' | sed -i 's/int\+([0-9]\+)/int/g' | sed -i 's/varbinary\+([0-9]\+)/bytea/g' | sed -i 's/.0000-00-00 00:00:00./current_timestamp/g' | sed -i 's/datetime/timestamp/g' | sed -i 's/double\+([0-9]\+)/double/g'
 | sed -i 's/decimal\+([0-9]\+)/decimal/g' | sed -i 's/tinyint/smallint/g' | sed -n '/CHARACTER SET\s\b\w\+\b/p' | sed -i 's/tinyint\+([0-9]\+)/smallint/g' |
 sed -i '/KEY\s"/d' | sed -i "s/ COMMENT '.*',/ ,/g" | sed -i '/ /N;s/,\n);/\n);/' | sed -i '/,/N;s/,\n);/\n);/' | sed -i 's/[A-Z]/\l&/g'
